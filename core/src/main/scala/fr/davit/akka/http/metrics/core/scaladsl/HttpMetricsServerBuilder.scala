@@ -49,7 +49,7 @@ final case class HttpMetricsServerBuilder(
     materializer: Materializer
 ) {
 
-  private lazy val http: HttpExt = Http(system)
+  private lazy val http: HttpExt = Http(system.classicSystem)
 
   def onInterface(newInterface: String): HttpMetricsServerBuilder           = copy(interface = newInterface)
   def onPort(newPort: Int): HttpMetricsServerBuilder                        = copy(port = newPort)

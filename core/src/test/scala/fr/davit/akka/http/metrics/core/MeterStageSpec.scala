@@ -22,7 +22,7 @@ import akka.stream.ClosedShape
 import akka.stream.scaladsl.{GraphDSL, RunnableGraph}
 import akka.stream.testkit.scaladsl.{TestSink, TestSource}
 import akka.testkit.TestKit
-import org.scalamock.scalatest.MockFactory
+import eu.monniot.scala3mock.scalatest.MockFactory
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.flatspec.AnyFlatSpecLike
 import org.scalatest.matchers.should.Matchers
@@ -40,19 +40,19 @@ class MeterStageSpec
   trait Fixture {
     val handler = mock[HttpMetricsHandler]
 
-    (handler.onConnection _)
+    when(handler.onConnection _)
       .expects()
       .returns((): Unit)
 
     val (requestIn, requestOut, responseIn, responseOut) = RunnableGraph
       .fromGraph(
         GraphDSL.createGraph(
-          TestSource.probe[HttpRequest],
-          TestSink.probe[HttpRequest],
-          TestSource.probe[HttpResponse],
-          TestSink.probe[HttpResponse]
+          TestSource[HttpRequest](),
+          TestSink[HttpRequest](),
+          TestSource[HttpResponse](),
+          TestSink[HttpResponse]()
         )((_, _, _, _)) { implicit builder => (reqIn, reqOut, respIn, respOut) =>
-          import GraphDSL.Implicits._
+          import GraphDSL.Implicits.*
           val meter = builder.add(new MeterStage(handler))
 
           reqIn ~> meter.in1
@@ -67,10 +67,11 @@ class MeterStageSpec
     // simulate downstream demand
     responseOut.request(1)
     requestOut.request(1)
+
   }
 
   "MeterStage" should "call onConnection on materialization and onDisconnection once terminated" in new Fixture {
-    (handler.onDisconnection _)
+    when(handler.onDisconnection _)
       .expects()
       .returns((): Unit)
 
@@ -82,14 +83,15 @@ class MeterStageSpec
   }
 
   it should "call onRequest wen request is offered" in new Fixture {
-    (handler.onRequest _)
+
+    when(handler.onRequest _)
       .expects(request)
       .returns(request)
 
     requestIn.sendNext(request)
     requestOut.expectNext() shouldBe request
 
-    (handler.onResponse _)
+    when(handler.onResponse _)
       .expects(request, response)
       .returns(response)
 
@@ -98,7 +100,8 @@ class MeterStageSpec
   }
 
   it should "flush the stream before stopping" in new Fixture {
-    (handler.onRequest _)
+
+    when(handler.onRequest _)
       .expects(request)
       .returns(request)
 
@@ -110,7 +113,7 @@ class MeterStageSpec
     requestOut.expectComplete()
 
     // response should still be accepted
-    (handler.onResponse _)
+    when(handler.onResponse _)
       .expects(request, response)
       .returns(response)
 
@@ -119,7 +122,8 @@ class MeterStageSpec
   }
 
   it should "propagate error from request in" in new Fixture {
-    (handler.onRequest _)
+
+    when(handler.onRequest _)
       .expects(request)
       .returns(request)
 
@@ -132,7 +136,8 @@ class MeterStageSpec
   }
 
   it should "propagate error from request out" in new Fixture {
-    (handler.onRequest _)
+
+    when(handler.onRequest _)
       .expects(request)
       .returns(request)
 
@@ -142,10 +147,12 @@ class MeterStageSpec
     val error = new Exception("BOOM!")
     requestOut.cancel(error)
     requestIn.expectCancellation()
+
   }
 
   it should "terminate and fail pending" in new Fixture {
-    (handler.onRequest _)
+
+    when(handler.onRequest _)
       .expects(request)
       .returns(request)
 
@@ -154,7 +161,7 @@ class MeterStageSpec
     requestOut.expectNext() shouldBe request
     requestOut.expectComplete()
 
-    (handler.onFailure _)
+    when(handler.onFailure _)
       .expects(request, MeterStage.PrematureCloseException)
       .returns(MeterStage.PrematureCloseException)
 
@@ -163,7 +170,8 @@ class MeterStageSpec
   }
 
   it should "propagate error from response in and fail pending" in new Fixture {
-    (handler.onRequest _)
+
+    when(handler.onRequest _)
       .expects(request)
       .returns(request)
 
@@ -173,7 +181,7 @@ class MeterStageSpec
     requestOut.expectComplete()
 
     val error = new Exception("BOOM!")
-    (handler.onFailure _)
+    when(handler.onFailure _)
       .expects(request, error)
       .returns(error)
 
@@ -182,7 +190,8 @@ class MeterStageSpec
   }
 
   it should "propagate error from response out and fail pending" in new Fixture {
-    (handler.onRequest _)
+
+    when(handler.onRequest _)
       .expects(request)
       .returns(request)
 
@@ -192,11 +201,12 @@ class MeterStageSpec
     requestOut.expectComplete()
 
     val error = new Exception("BOOM!")
-    (handler.onFailure _)
+    when(handler.onFailure _)
       .expects(request, error)
       .returns(error)
 
     responseOut.cancel(error)
     responseIn.expectCancellation()
   }
+
 }

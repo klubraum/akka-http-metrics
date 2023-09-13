@@ -17,18 +17,19 @@
 package fr.davit.akka.http.metrics.core
 
 import akka.actor.ActorSystem
-import akka.http.scaladsl.model._
-import akka.http.scaladsl.model.headers.{`User-Agent`, ProductVersion}
+import akka.http.scaladsl.model.*
+import akka.http.scaladsl.model.headers.{ProductVersion, `User-Agent`}
 import akka.stream.Materializer
 import akka.stream.scaladsl.Source
 import akka.testkit.TestKit
 import akka.util.ByteString
 import fr.davit.akka.http.metrics.core.HttpMetricsRegistry.TraceTimestampKey
+import fr.davit.akka.http.metrics.core.TestRegistry.*
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.flatspec.AnyFlatSpecLike
 import org.scalatest.matchers.should.Matchers
 
-import scala.concurrent.duration._
+import scala.concurrent.duration.*
 
 class HttpMetricsRegistrySpec
     extends TestKit(ActorSystem("HttpMetricsRegistrySpec"))

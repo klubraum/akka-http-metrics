@@ -10,7 +10,7 @@ lazy val filterScalacOptions = { options: Seq[String] =>
 }
 
 // for sbt-github-actions
-ThisBuild / crossScalaVersions := Seq("2.13.10", "2.12.17")
+ThisBuild / crossScalaVersions := Seq("3.3.0")
 ThisBuild / githubWorkflowBuild := Seq(
   WorkflowStep.Sbt(name = Some("Check project"), commands = List("scalafmtCheckAll", "headerCheckAll")),
   WorkflowStep.Sbt(name = Some("Build project"), commands = List("test", "it:test"))
@@ -42,20 +42,12 @@ lazy val commonSettings = Defaults.itSettings ++
     Test / publishArtifact := false,
     publishTo := Some(if (isSnapshot.value) Opts.resolver.sonatypeSnapshots else Opts.resolver.sonatypeStaging),
     releaseCrossBuild := true,
-    releasePublishArtifactsAction := PgpKeys.publishSigned.value,
-    credentials ++= (for {
-      username <- sys.env.get("SONATYPE_USERNAME")
-      password <- sys.env.get("SONATYPE_PASSWORD")
-    } yield Credentials("Sonatype Nexus Repository Manager", "oss.sonatype.org", username, password)).toSeq
+    releasePublishArtifactsAction := PgpKeys.publishSigned.value
   )
 
 lazy val `akka-http-metrics` = (project in file("."))
   .aggregate(
     `akka-http-metrics-core`,
-    `akka-http-metrics-datadog`,
-    `akka-http-metrics-graphite`,
-    `akka-http-metrics-dropwizard`,
-    `akka-http-metrics-dropwizard-v5`,
     `akka-http-metrics-prometheus`
   )
   .settings(commonSettings: _*)
@@ -76,80 +68,7 @@ lazy val `akka-http-metrics-core` = (project in file("core"))
       Dependencies.Test.AkkaStreamTestkit,
       Dependencies.Test.Logback,
       Dependencies.Test.ScalaMock,
-      Dependencies.Test.ScalaTest
-    )
-  )
-
-lazy val `akka-http-metrics-datadog` = (project in file("datadog"))
-  .configs(IntegrationTest)
-  .dependsOn(`akka-http-metrics-core`)
-  .settings(commonSettings: _*)
-  .settings(
-    libraryDependencies ++= Seq(
-      Dependencies.Datadog,
-      Dependencies.Provided.AkkaStream,
-      Dependencies.Test.AkkaHttpTestkit,
-      Dependencies.Test.AkkaSlf4j,
-      Dependencies.Test.AkkaStreamTestkit,
-      Dependencies.Test.Logback,
-      Dependencies.Test.ScalaTest
-    )
-  )
-
-lazy val `akka-http-metrics-dropwizard` = (project in file("dropwizard"))
-  .configs(IntegrationTest)
-  .dependsOn(`akka-http-metrics-core`)
-  .settings(commonSettings: _*)
-  .settings(
-    libraryDependencies ++= Seq(
-      Dependencies.DropwizardCore,
-      Dependencies.DropwizardJson,
-      Dependencies.ScalaLogging,
-      Dependencies.Provided.AkkaStream,
-      Dependencies.Test.AkkaHttpJson,
-      Dependencies.Test.AkkaHttpTestkit,
-      Dependencies.Test.AkkaSlf4j,
-      Dependencies.Test.AkkaStreamTestkit,
-      Dependencies.Test.AkkaTestkit,
-      Dependencies.Test.DropwizardJvm,
-      Dependencies.Test.Logback,
-      Dependencies.Test.ScalaCollectionCompat,
-      Dependencies.Test.ScalaTest
-    )
-  )
-
-lazy val `akka-http-metrics-dropwizard-v5` = (project in file("dropwizard-v5"))
-  .configs(IntegrationTest)
-  .dependsOn(`akka-http-metrics-core`)
-  .settings(commonSettings: _*)
-  .settings(
-    libraryDependencies ++= Seq(
-      Dependencies.DropwizardV5Core,
-      Dependencies.DropwizardV5Json,
-      Dependencies.Provided.AkkaStream,
-      Dependencies.Test.AkkaHttpJson,
-      Dependencies.Test.AkkaHttpTestkit,
-      Dependencies.Test.AkkaSlf4j,
-      Dependencies.Test.AkkaStreamTestkit,
-      Dependencies.Test.AkkaTestkit,
-      Dependencies.Test.DropwizardV5Jvm,
-      Dependencies.Test.Logback,
-      Dependencies.Test.ScalaCollectionCompat,
-      Dependencies.Test.ScalaTest
-    )
-  )
-
-lazy val `akka-http-metrics-graphite` = (project in file("graphite"))
-  .configs(IntegrationTest)
-  .dependsOn(`akka-http-metrics-core`)
-  .settings(commonSettings: _*)
-  .settings(
-    libraryDependencies ++= Seq(
-      Dependencies.Provided.AkkaStream,
-      Dependencies.Test.AkkaHttpTestkit,
-      Dependencies.Test.AkkaSlf4j,
-      Dependencies.Test.AkkaStreamTestkit,
-      Dependencies.Test.Logback,
+      Dependencies.Test.ScalaMockScalaTest,
       Dependencies.Test.ScalaTest
     )
   )

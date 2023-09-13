@@ -18,6 +18,7 @@ lazy val commonSettings = Defaults.itSettings ++
       "klubraum",
       System.getenv("GITHUB_TOKEN")
     ),
+    organization := "com.klubraum",
     crossScalaVersions := (ThisBuild / crossScalaVersions).value,
     scalaVersion := crossScalaVersions.value.head,
     scalacOptions ~= filterScalacOptions,

@@ -18,7 +18,7 @@ package fr.davit.akka.http.metrics.core
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.model.*
-import akka.http.scaladsl.model.headers.{ProductVersion, `User-Agent`}
+import akka.http.scaladsl.model.headers.{`User-Agent`, ProductVersion}
 import akka.stream.Materializer
 import akka.stream.scaladsl.Source
 import akka.testkit.TestKit

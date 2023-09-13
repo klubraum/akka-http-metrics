@@ -1,6 +1,4 @@
 // General info
-val username = "RustedBones"
-val repo     = "akka-http-metrics"
 
 lazy val filterScalacOptions = { options: Seq[String] =>
   options.filterNot { o =>
@@ -11,38 +9,23 @@ lazy val filterScalacOptions = { options: Seq[String] =>
 
 // for sbt-github-actions
 ThisBuild / crossScalaVersions := Seq("3.3.0")
-ThisBuild / githubWorkflowBuild := Seq(
-  WorkflowStep.Sbt(name = Some("Check project"), commands = List("scalafmtCheckAll", "headerCheckAll")),
-  WorkflowStep.Sbt(name = Some("Build project"), commands = List("test", "it:test"))
-)
-ThisBuild / githubWorkflowTargetBranches := Seq("main")
-ThisBuild / githubWorkflowPublishTargetBranches := Seq.empty
 
 lazy val commonSettings = Defaults.itSettings ++
-  headerSettings(IntegrationTest) ++
   Seq(
-    organization := "fr.davit",
-    organizationName := "Michel Davit",
+    credentials += Credentials(
+      "GitHub Package Registry",
+      "maven.pkg.github.com",
+      "klubraum",
+      System.getenv("GITHUB_TOKEN")
+    ),
     crossScalaVersions := (ThisBuild / crossScalaVersions).value,
     scalaVersion := crossScalaVersions.value.head,
     scalacOptions ~= filterScalacOptions,
-    homepage := Some(url(s"https://github.com/$username/$repo")),
     licenses += ("Apache-2.0", new URL("https://www.apache.org/licenses/LICENSE-2.0.txt")),
-    startYear := Some(2019),
-    scmInfo := Some(ScmInfo(url(s"https://github.com/$username/$repo"), s"git@github.com:$username/$repo.git")),
-    developers := List(
-      Developer(
-        id = s"$username",
-        name = "Michel Davit",
-        email = "michel@davit.fr",
-        url = url(s"https://github.com/$username")
-      )
-    ),
     publishMavenStyle := true,
     Test / publishArtifact := false,
-    publishTo := Some(if (isSnapshot.value) Opts.resolver.sonatypeSnapshots else Opts.resolver.sonatypeStaging),
-    releaseCrossBuild := true,
-    releasePublishArtifactsAction := PgpKeys.publishSigned.value
+    githubOwner := "klubraum",
+    githubRepository := "akka-http-metrics"
   )
 
 lazy val `akka-http-metrics` = (project in file("."))
